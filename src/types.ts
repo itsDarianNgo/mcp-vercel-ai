@@ -11,7 +11,8 @@ export const MistralModels = z.enum([
 
 // Input types for tools
 export const GenerateTextInput = z.object({
-    provider: z.enum(["openai", "mistral", "mistral-agent"]),
+    provider: z.enum(["openai", "mistral"]),
+    // provider: z.enum(["openai", "mistral", "mistral-agent"]),
     model: z.string(),
     agentId: z.string().optional(),
     prompt: z.string(),
@@ -19,9 +20,9 @@ export const GenerateTextInput = z.object({
     safePrompt: z.boolean().optional() // Mistral-specific option
 }).refine((data): boolean => {
     // If it's a mistral-agent, require agentId
-    if (data.provider === 'mistral-agent') {
-        return !!data.agentId;
-    }
+    // if (data.provider === 'mistral-agent') {
+    //     return !!data.agentId;
+    // }
     // For other providers (openai, mistral), require model
     return !!data.model;
 }, {

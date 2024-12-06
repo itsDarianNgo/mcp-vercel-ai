@@ -90,6 +90,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         ]
     };
 });
+// First define the provider handlers
+const providers = {
+    'openai': openai,
+    // 'anthropic': anthropic,
+    'mistral': mistral,
+};
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
@@ -97,20 +103,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             case 'generate_text': {
                 const input = GenerateTextInput.parse(request.params.arguments);
 
-                // Only handle OpenAI
-                if (input.provider !== 'openai') {
-                    throw new Error('Only OpenAI provider is supported');
+                // Get the provider function
+                const providerFunction = providers[input.provider];
+                if (!providerFunction) {
+                    throw new Error(`Provider ${input.provider} is not supported. Supported providers: ${Object.keys(providers).join(', ')}`);
                 }
 
-                const model = openai(input.model, {}
-                );
+                if (!providerFunction) {
+                    throw new Error(`Provider ${input.provider} is not supported`);
+                }
+
+                const model = providerFunction(input.model, {});
 
                 const result = await generateText({
                     model,
                     prompt: input.prompt,
                     ...(input.system != null ? {system: input.system} : {})
                 });
-
 
                 return {
                     content: [{
