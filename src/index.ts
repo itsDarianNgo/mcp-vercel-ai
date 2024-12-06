@@ -97,18 +97,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             case 'generate_text': {
                 const input = GenerateTextInput.parse(request.params.arguments);
 
-                let model;
-                if (input.provider === 'openai') {
-                    model = openai(input.model, {});
-                } else {
-                    model = mistral(input.model, {});
+                // Only handle OpenAI
+                if (input.provider !== 'openai') {
+                    throw new Error('Only OpenAI provider is supported');
                 }
+
+                const model = openai(input.model, {}
+                );
 
                 const result = await generateText({
                     model,
                     prompt: input.prompt,
-                    ...(input.system != null ? {system: input.system} : {}) // Thanks Yami!
+                    ...(input.system != null ? {system: input.system} : {})
                 });
+
 
                 return {
                     content: [{
@@ -122,6 +124,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error("Unknown tool");
         }
     } catch (error) {
+        console.error('Detailed error:', error); // Add detailed error logging
         return {
             content: [{
                 type: "text",
@@ -131,6 +134,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
     }
 });
+
 // Start the server
 async function main() {
     const transport = new StdioServerTransport();
